@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+openai = "==0.6.3"
+rasa = "==2.5.0"
+sanic = "<19.12.3" # On Mac you have to limit sanic to properly lock pipenv
+flask-restful = "*"
+flask = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7.9"

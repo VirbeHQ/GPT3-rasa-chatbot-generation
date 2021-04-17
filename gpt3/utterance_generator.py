@@ -47,6 +47,8 @@ class UtteranceGenerator:
         }
         prompt = self.PROMPT.format(**prompt_settings).strip('\n')
 
+        # print(prompt)
+
         if example:
             prompt += OPTIONAL_EXAMPLE.format(example=example)
 

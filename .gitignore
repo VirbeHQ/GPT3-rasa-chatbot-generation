@@ -1,0 +1,8 @@
+# IDE specific
+.idea
+
+# Secrets
+.env
+
+# Rasa trained models
+rasa-demo/models

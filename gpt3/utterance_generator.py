@@ -3,18 +3,20 @@ import re
 
 import openai
 
-from gpt3.prompt import OPTIONAL_EXAMPLE, PROMPT_INIT, PROMTABLE_EXAMPLES
+from gpt3.prompt import OPTIONAL_EXAMPLE, PROMPT_INIT, PROMTABLE_EXAMPLES, SLOTS_INIT
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 class UtteranceGenerator:
-    EXAMPLES_TO_INCLUDE_IN_PROMPT = ['DecreaseBrightness', 'GetWeather']
+    EXAMPLES_TO_INCLUDE_IN_PROMPT = ['DecreaseBrightness', 'GetWeather', 'Greeting', 'BookRestaurant']
+    STOP_SEQUENCE = '###'
+    MAX_REQUESTS = 4
 
     def __init__(self, examples_to_include_in_prompt:list=None, gpt3_settings:dict={}):
 
         examples_to_include_in_prompt = examples_to_include_in_prompt or self.EXAMPLES_TO_INCLUDE_IN_PROMPT
 
-        self.PROMPT = '\n###\n'.join(
+        self.PROMPT = f'\n{self.STOP_SEQUENCE}\n'.join(
             [v.strip('\n') for k, v in PROMTABLE_EXAMPLES.items() if k in examples_to_include_in_prompt] + [PROMPT_INIT]
         ).strip('\n')
 
@@ -22,11 +24,11 @@ class UtteranceGenerator:
             'engine': 'davinci',
             'temperature':0.85,
             'top_p':1, 
-            'frequency_penalty':0,
+            'frequency_penalty':0.1,
             'presence_penalty':0,
             'best_of':1,
             'max_tokens':1000,
-            'stop':['###'],
+            'stop':[self.STOP_SEQUENCE],
         }
         self.gpt3_settings.update(gpt3_settings)
 
@@ -42,16 +44,23 @@ class UtteranceGenerator:
         """
         prompt_settings = {
             'intent': intent,
-            'slots': ', '.join(slots),
+            'slots_init': SLOTS_INIT[bool(len(slots))].format(slots=', '.join(slots)),
             'n': n + bool(example),
         }
         prompt = self.PROMPT.format(**prompt_settings).strip('\n')
 
-        # print(prompt)
-
         if example:
             prompt += OPTIONAL_EXAMPLE.format(example=example)
 
+        requests = 0
+        utterances = []
+        while len(utterances) < n and requests < self.MAX_REQUESTS:
+            utterances += self._get_utterances(prompt, slots, filter_na_slots, max_length)
+            requests += 1
+
+        return utterances
+
+    def _get_utterances(self, prompt, slots, filter_na_slots, max_length):
         response = openai.Completion().create(prompt=prompt, **self.gpt3_settings)
 
         utterances = [t.lstrip('- ') for t in response['choices'][0]['text'].strip('\n').split('\n')]

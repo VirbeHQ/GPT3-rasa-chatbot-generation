@@ -10,7 +10,7 @@ api = Api(app)
 
 parser = reqparse.RequestParser()
 parser.add_argument('intent', required=True, help="intent cannot be blank!")
-parser.add_argument('slot', action='append', help="slot cannot be blank!")
+parser.add_argument('slot', action='append', help="slot cannot be blank!", default=[])
 parser.add_argument('n', type=int, help='Number cannot be converted')
 
 generator = UtteranceGenerator()
@@ -32,16 +32,14 @@ class IntentGenerator(Resource):
         #     "What is the meaning of the universe",
         #     "What does universe mean"
         # ]
-        utternaces = generator.generate(args['intent'], args['slot'], args['n'])
+        slots = args.get('slot')
+        print(slots)
+        utternaces = generator.generate(args['intent'], slots, args['n'])
         return {
             "intent": args['intent'],
-            "slots": args['slot'],
+            "slots": slots,
             "utterances": utternaces
         }
-
-    def post(self):
-        args = parser.parse_args()
-        return generator.PROMPT
 
 
 ##

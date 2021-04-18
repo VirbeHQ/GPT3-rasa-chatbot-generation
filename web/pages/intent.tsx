@@ -21,7 +21,9 @@ import {useRootStore} from "@mobx";
 const IntentPage: React.FC = () => {
     let client = new Client();
     const [isSending, setIsSending] = useState(false)
-    const [intentName, setIntentName] = useState("")
+    const [intentName, setIntentName] = useState("PlayMusic")
+    const [slotsText, setSlotsText] = useState("")
+    const [number, setNumber] = useState(3)
     const [slots, setSlots] = useState([])
     const [generatedUtterance, setGeneratedUtterance] = useState([])
     const [formattedResponse, setFormattedResponse] = useState("")
@@ -29,21 +31,29 @@ const IntentPage: React.FC = () => {
 
     const {intentStore} = useRootStore()
 
-    const sendRequest = useCallback(async () => {
+    useEffect(() => {
+        if (slotsText.trim() == "") setSlots([])
+        else setSlots(slotsText.split(","))
+    }, [slotsText])
+
+    useEffect(() => {
+        setFormattedResponse(generatedUtterance.map(utternace => `  - ${utternace}`).join('\n'))
+    }, [generatedUtterance])
+
+    const sendRequest = () => {
         // don't send again while we are sending
         if (isSending) return
         // update state
         setIsSending(true)
-        // send the actual request
-        await client.generateUtterances(intentName, [], 5).then((utteranceResponse) => {
-                console.log(utteranceResponse)
-                setGeneratedUtterance(utteranceResponse.utterances)
-                setFormattedResponse(generatedUtterance.map(utternace => `  - ${utternace}`).join('\n'))
-            }
-        )
-        // once the request is sent, update state again
-        setIsSending(false)
-    }, [isSending])
+        client
+            .generateUtterances(intentName, slots, number)
+            .then((utteranceResponse) => setGeneratedUtterance(utteranceResponse.utterances))
+            .finally(() => {
+                // once the request is sent, update state again
+                setIsSending(false)
+            })
+
+    }
 
     const appendIntent = useCallback(async () => {
         intentStore.addIntent(intentName, generatedUtterance)
@@ -68,13 +78,20 @@ const IntentPage: React.FC = () => {
                     </FormControl>
                     <FormControl id="slot">
                         <FormLabel>Slot names</FormLabel>
-                        <Input type="text"/>
+                        <Input
+                            type="text"
+                            value={slotsText}
+                            onChange={(e) => setSlotsText(e.target.value)}
+                        />
                         <FormHelperText>Define available slots with underscore (eg. artist_name,
                             song_name)</FormHelperText>
                     </FormControl>
                     <FormControl id="n">
                         <FormLabel>Utterance number</FormLabel>
-                        <NumberInput>
+                        <NumberInput
+                            value={number}
+                            onChange={(value) => setNumber(value)}
+                        >
                             <NumberInputField/>
                             <NumberInputStepper>
                                 <NumberIncrementStepper/>
@@ -87,6 +104,7 @@ const IntentPage: React.FC = () => {
                         mt={4}
                         colorScheme="teal"
                         type="submit"
+                        isLoading={isSending}
                         onClick={sendRequest}
                     >
                         Generate
@@ -96,7 +114,7 @@ const IntentPage: React.FC = () => {
                     <Heading>Generated utterances</Heading>
                     <Textarea
                         placeholder="This is where your utterances will be generated"
-                        minH="300px"
+                        minH="200px"
                         value={formattedResponse}
                         onChange={(e) => setFormattedResponse(e.target.value)}/>
                     <Button

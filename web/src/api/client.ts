@@ -10,13 +10,13 @@ export class Client {
      * @param slots
      * @param n - number of utterances
      */
-    generateUtterances(intent: string, slots: string[], n): Promise<UtteranceResponse> {
+    async generateUtterances(intent: string, slots: string[], n): Promise<UtteranceResponse> {
         return axios.get<UtteranceResponse>(
-            BASE_URL + `intent?intent=${intent}&slot=${slots[0]}&n=${n}`
+            BASE_URL + `intent?intent=${intent}&n=${n}${slots && slots.length>0 ? `&slot=${slots.join("&slot=")}`: ""}`
         )
             .then((data) => {
                 if (data.status !== 200) {
-                    throw Error(`Failed to login: ${data.status} ${data.statusText}`);
+                    throw Error(`Failed to get the utterances: ${data.status} ${data.statusText}`);
                 }
                 return data.data;
             });

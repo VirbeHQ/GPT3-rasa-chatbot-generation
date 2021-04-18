@@ -15,7 +15,7 @@ const Utterance = types.model({
 const Intent = types.model({
     name: types.string,
     utterances: types.array(Utterance)
-}).actions((self) => ({
+}).actions(self => ({
     addUtterance(text: string) {
         self.utterances.push(text)
     }
@@ -24,11 +24,24 @@ const Intent = types.model({
 
 export const IntentStore = types
     .model("IntentStore", {
-        intents: types.array(Intent)
+        intents: types.array(Intent),
+        nluFile: types.optional(types.string, "")
     })
     .actions(self => ({
         addIntent(intentName: string, utterances: string[]) {
-            // Intent newIntent = Intent.create({name: intentName, utterances: []});
-            // self.intents.push(newIntent)
+            self.intents.push(Intent.create({
+                name: intentName,
+                utterances: utterances.map(utterance => Utterance.create({text: utterance}))
+            }));
+            let nluYML =
+                `
+version: "2.0"
+nlu:
+`;
+            self.intents.forEach(intent => {
+                nluYML = nluYML.concat(`- intent: ${intent.name}\n  examples: |\n`)
+                nluYML = nluYML.concat(intent.utterances.map(utternace => `    - ${utternace.text}`).join('\n')+"\n")
+            });
+            self.nluFile = nluYML;
         },
     }));

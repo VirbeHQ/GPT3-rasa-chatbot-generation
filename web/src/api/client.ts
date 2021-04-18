@@ -10,9 +10,9 @@ export class Client {
      * @param slots
      * @param n - number of utterances
      */
-    async generateUtterances(intent: string, slots: string[], n): Promise<UtteranceResponse> {
+    async generateUtterances(intent: string, slots: string[], n, example: string): Promise<UtteranceResponse> {
         return axios.get<UtteranceResponse>(
-            BASE_URL + `intent?intent=${intent}&n=${n}${slots && slots.length>0 ? `&slot=${slots.join("&slot=")}`: ""}`
+            BASE_URL + `intent?intent=${intent}&n=${n}${slots && slots.length>0 ? `&slot=${slots.join("&slot=")}`: ""}${example ? `&example=${example}` : ""}`
         )
             .then((data) => {
                 if (data.status !== 200) {

@@ -24,6 +24,7 @@ const IntentPage: React.FC = () => {
     const [intentName, setIntentName] = useState("PlayMusic")
     const [slotsText, setSlotsText] = useState("")
     const [number, setNumber] = useState(3)
+    const [exampleUtterance, setExampleUtterance] = useState("")
     const [slots, setSlots] = useState([])
     const [generatedUtterance, setGeneratedUtterance] = useState([])
     const [formattedResponse, setFormattedResponse] = useState("")
@@ -46,23 +47,17 @@ const IntentPage: React.FC = () => {
         // update state
         setIsSending(true)
         client
-            .generateUtterances(intentName, slots, number)
+            .generateUtterances(intentName, slots, number, exampleUtterance)
             .then((utteranceResponse) => setGeneratedUtterance(utteranceResponse.utterances))
             .finally(() => {
                 // once the request is sent, update state again
                 setIsSending(false)
             })
-
     }
 
     const appendIntent = useCallback(async () => {
         intentStore.addIntent(intentName, generatedUtterance)
     }, [])
-    // const {intentStore} = useRootStore()
-    //
-    // useEffect({
-    //
-    // }, [])
 
     return (
         <Flex direction="column" minH="100vh">
@@ -99,6 +94,13 @@ const IntentPage: React.FC = () => {
                             </NumberInputStepper>
                         </NumberInput>
                         <FormHelperText>Define number of utterances to generate</FormHelperText>
+                    </FormControl>
+                    <FormControl id="example">
+                        <FormLabel>(Optional) Example Utterance</FormLabel>
+                        <Input type="text"
+                               value={exampleUtterance}
+                               onChange={(e) => setExampleUtterance(e.target.value)}/>
+                        <FormHelperText>Define first example eg. Play [song name](song_name) by [artist name](artist_name)</FormHelperText>
                     </FormControl>
                     <Button
                         mt={4}

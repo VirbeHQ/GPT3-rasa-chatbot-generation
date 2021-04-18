@@ -12,6 +12,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('intent', required=True, help="intent cannot be blank!")
 parser.add_argument('slot', action='append', help="slot cannot be blank!", default=[])
 parser.add_argument('n', type=int, help='Number cannot be converted')
+parser.add_argument('example')
 
 generator = UtteranceGenerator()
 
@@ -34,7 +35,7 @@ class IntentGenerator(Resource):
         # ]
         slots = args.get('slot')
         print(slots)
-        utternaces = generator.generate(args['intent'], slots, args['n'])
+        utternaces = generator.generate(args['intent'], slots, args['n'], args['example'])
         return {
             "intent": args['intent'],
             "slots": slots,

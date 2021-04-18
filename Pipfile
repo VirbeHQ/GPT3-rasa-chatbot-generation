@@ -9,6 +9,7 @@ rasa = "==2.5.0"
 sanic = "<19.12.3" # On Mac you have to limit sanic to properly lock pipenv
 flask-restful = "*"
 flask = "*"
+flask-cors = "*"
 
 [dev-packages]
 

@@ -25,7 +25,7 @@ const IntentPage: React.FC = observer(() => {
     const [isSending, setIsSending] = useState(false)
     const [intentName, setIntentName] = useState("PlayMusic")
     const [slotsText, setSlotsText] = useState("")
-    const [number, setNumber] = useState(3)
+    const [number, setNumber] = useState(8)
     const [exampleUtterance, setExampleUtterance] = useState("")
     const [slots, setSlots] = useState([])
     const [generatedUtterance, setGeneratedUtterance] = useState([])
@@ -134,8 +134,17 @@ const IntentPage: React.FC = observer(() => {
                         </Button>
                     </Flex>
                 </Flex>
-                <Flex direction="column" mt={12} w="100%">
+                <Flex direction="column" mt={12} mb={12} w="100%">
                     <Heading>Final Rasa NLU file</Heading>
+                    <Button
+                            mt={4}
+                            mb={4}
+                            colorScheme="teal"
+                            type="submit"
+                            onClick={() => {navigator.clipboard.writeText(intentStore.nluFile)}}
+                        >
+                        Copy to clipboard
+                    </Button>
                     <Textarea
                         placeholder=""
                         minH="600px"
